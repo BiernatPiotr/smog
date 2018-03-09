@@ -10,4 +10,4 @@ code
 
 ## Data
 Weather data are powered by <a href="https://developer.worldweatheronline.com/" title="Free Weather API" target="_blank">World Weather Online</a>.
-Smog data are powered by Polish <a href="http://powietrze.gios.gov.pl" title="Chief Inspectorate For Environmental Protection" </a>. 
+Smog data are powered by Polish <a href="http://powietrze.gios.gov.pl" title="Chief Inspectorate For Environmental Protection"> Chief Inspectorate For Environmental Protection</a>. 
