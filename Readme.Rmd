@@ -1,14 +1,4 @@
-
-title: "Readme"
-author: "Piotr Biernat"
-date: "9 03 2018"
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Markdown
+## Introduction
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
@@ -18,12 +8,6 @@ When you click the **Knit** button a document will be generated that includes bo
 code
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```
-code
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Data
+Weather data are powered by <a href="https://developer.worldweatheronline.com/" title="Free Weather API" target="_blank">World Weather Online</a>.
+Smog data are powered by Polish <a href="http://powietrze.gios.gov.pl" title="Chief Inspectorate For Environmental Protection" </a>. 
