@@ -91,9 +91,9 @@ fAirPollution <- function(iPM10) {
 dfAllData %>%
   rowwise() %>%
   mutate(
-    year = format(date, '%Y'),
-    month = format(date, '%m'),
-    day = format(date, '%d'),
+    year = as.integer(format(date, '%Y')),
+    month = as.integer(format(date, '%m')),
+    day = as.integer(format(date, '%d')),
     AirQuality = factor(fAirPollution(PM10), levels = c('Very good','Good','Moderate','Sufficient','Bad','Very bad'), ordered = TRUE)
   ) %>%
   ungroup() %>%
