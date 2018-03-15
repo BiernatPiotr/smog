@@ -24,7 +24,6 @@ dfWeather %>%
     winddirDegree, # wind direction in degrees
     humidity, #humidity in percentage
     pressure, # atmospheric pressure in millibars 
-    visibility, # visibility in kilometers
     cloudcover, # cloud cover amount in percentage
     precipMM # precipitation in millimeters
   ) ->
