@@ -56,6 +56,17 @@ read.csv2(
   rbind(dfSmog) ->
   dfSmog
 
+# and 2017 to march 2018
+read.csv2(
+  file = 'data/2017_PM10_1g.csv',
+  sep = ';',
+  header=TRUE,
+  stringsAsFactors = FALSE
+) %>% 
+  select(Date, PM10 = MpKrakAlKras.PM10.1g) %>%
+  rbind(dfSmog) ->
+  dfSmog
+
 # quick preview
 glimpse(dfSmog)
 

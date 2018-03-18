@@ -8,6 +8,37 @@ library(mgcv)
 # load all data
 source('scripts/load_data.R')
 
+
+# lets see PM10 distribution
+
+ggplot(dfAllData,aes(PM10, ..density..)) +
+  geom_histogram(bins = 100, color = 'white', fill = 'black', alpha = 0.6) +  
+  xlim(0,400) +
+  labs(
+    x = expression(paste('PM10 ',mu,'g/m'^3)),
+    y = 'Density',
+    fill = 'Year'
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(
+      angle = 45, 
+      vjust = 1, 
+      hjust=1
+    )
+  ) -> FullDist
+  
+
+# saving plot
+ggsave(
+  filename = 'plots/FullDist.png',
+  plot = FullDist,
+  width = 8,
+  dpi = 100
+)
+
 # for a start let's see PM10 over months
 
 ggplot(dfAllData) +
@@ -62,6 +93,40 @@ dfAllData %>%
   dfWinterData
 
 glimpse(dfWinterData)
+
+dfWinterData %>%
+  mutate(IfPrecipitation = precipMM>0) ->
+  dfWinterData
+
+# lets see PM10 distribution on new data
+
+ggplot(dfWinterData,aes(PM10, ..density..)) +
+  geom_histogram(bins = 100, color = 'white', fill = 'black', alpha = 0.6) +  
+  xlim(0,400) +
+  labs(
+    x = expression(paste('PM10 ',mu,'g/m'^3)),
+    y = 'Density',
+    fill = 'Year'
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(
+      angle = 45, 
+      vjust = 1, 
+      hjust=1
+    )
+  ) -> WinterDist
+
+
+# saving plot
+ggsave(
+  filename = 'plots/WinterDist.png',
+  plot = WinterDist,
+  width = 8,
+  dpi = 100
+)
 
 #######################################
 ##  loop for plot of every variable
@@ -211,3 +276,116 @@ for (iWeatherVariable in names(dfWinterData)[c(3:10)]) {
   )
   
 }
+
+# humidity over temperature plot
+
+ggplot(dfWinterData) +
+  # data
+  geom_jitter( 
+    aes(
+      x = humidity,
+      y = tempC,
+      color = AirQuality),
+    size = 0.95
+  )  +
+  scale_colour_brewer(
+    palette = 'RdYlGn',
+    direction = -1
+  ) +
+  geom_smooth(
+    aes(x = humidity, y = tempC)) +
+  # linear model
+  labs(
+    x = iUnits[['humidity']],
+    y = iUnits[['tempC']]
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)
+  ) -> ggPlot
+  
+ggsave(
+    filename = paste0('plots/HumTemp.png'),
+    plot = ggPlot,
+    width = 8,
+    dpi = 100
+  )
+
+# boolean precipitation plot
+
+ggplot(
+  dfWinterData,
+  aes(
+    x = IfPrecipitation,
+    y = PM10,
+    colour = IfPrecipitation,
+    fill = IfPrecipitation
+  )
+) +
+  scale_fill_discrete(name = "", labels = c('Precipitation','No precipitation')) +
+  scale_colour_discrete(name = "", labels = c('Precipitation','No precipitation')) +
+  # data
+  geom_boxplot() +
+  ylim(0,400) +
+  theme_classic() +
+  theme(
+    axis.text.x=element_blank(),
+    legend.position="bottom",
+    legend.box = "horizontal"
+    ) +
+  labs(
+    x = '',
+    y = expression(paste('PM10 ',mu,'g/m'^3))
+  ) +
+  stat_summary(
+    geom = "crossbar",
+    width=0.65, 
+    fatten=0, 
+    color="white", 
+    fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) }
+  ) -> ggPlot
+
+ggsave(
+  filename = paste0('plots/IfPrecip.png'),
+  plot = ggPlot,
+  width = 8,
+  dpi = 100
+)
+
+# winder direction and speed plot
+
+ggplot(dfWinterData) +
+  # data
+  geom_jitter( 
+    aes(
+      x = winddirDegree,
+      y = windspeedKmph,
+      color = AirQuality),
+    size = 0.95
+  )  +
+  scale_colour_brewer(
+    palette = 'RdYlGn',
+    direction = -1
+  ) +
+  geom_smooth(
+    aes(x = winddirDegree, y = windspeedKmph)) +
+  # linear model
+  labs(
+    x = iUnits[['winddirDegree']],
+    y = iUnits[['windspeedKmph']]
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)
+  ) -> ggPlot
+
+ggsave(
+  filename = paste0('plots/WindSpeedDegree.png'),
+  plot = ggPlot,
+  width = 8,
+  dpi = 100
+)
