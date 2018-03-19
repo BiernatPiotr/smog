@@ -2,12 +2,12 @@
 
 ## Table of context
 
-[Introduction](#introduction)
-[Data sources](#data-sources)
-[Data exploration](#data-exploration)
-[PM10 modelling](#pm10-modelling)
-[Air pollution modelling](#air-pollution-modelling)
-[What's next?](#whats-next)
+[Introduction](#introduction)  
+[Data sources](#data-sources)  
+[Data exploration](#data-exploration)  
+[PM10 modelling](#pm10-modelling)  
+[Air pollution modelling](#air-pollution-modelling)  
+[What's next?](#whats-next)  
 
 ## Introduction
 
@@ -37,9 +37,9 @@ Available weather data included:
 
 ## What's next?
 
-- [x] Download data
-- [] Data exploration
-- [] PM10 gam modelling
-- [] Air pollution level gam modelling
-- [] More advanced modelling (random forest?)
+- [x] Download data  
+- [] Data exploration  
+- [] PM10 gam modelling  
+- [] Air pollution level gam modelling  
+- [] More advanced modelling (random forest?)  
 
