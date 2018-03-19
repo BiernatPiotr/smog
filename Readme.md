@@ -38,8 +38,8 @@ Available weather data included:
 ## What's next?
 
 - [x] Download data  
-- [] Data exploration  
-- [] PM10 gam modelling  
-- [] Air pollution level gam modelling  
-- [] More advanced modelling (random forest?)  
+- [ ] Data exploration  
+- [ ] PM10 gam modelling  
+- [ ] Air pollution level gam modelling  
+- [ ] More advanced modelling (random forest?)  
 
