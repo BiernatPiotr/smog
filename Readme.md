@@ -5,6 +5,15 @@
 [Introduction](#introduction)  
 [Data sources](#data-sources)  
 [Data exploration](#data-exploration)  
+  [PM 10 distribution](#pm-10-distribution)  
+  [Temperature](#temperature)  
+  [Wind speed](#wind-speed)  
+  [Humidity](#humidity)  
+  [Pressure](#pressure)  
+  [Precipitation](#precipitation)  
+  [Feels like temperature](#feels-like-temperature)  
+  [Cloudiness](#cloudiness)  
+  [Wind direction](#wind-direction)  
 [PM10 modelling](#pm10-modelling)  
 [Air pollution modelling](#air-pollution-modelling)  
 [What's next?](#whats-next)  
@@ -17,8 +26,8 @@ Finally I want to answer the title question: as we can predict weather, can we a
 ## Data sources
 
 Analysis was performed on the basis on smog data (measured as PM10 concentration) and historical weather data in the period from January 1, 2015 to March 15, 2018. Smog data are powered by <a href="http://powietrze.gios.gov.pl" title="Chief Inspectorate For Environmental Protection"> Polish Chief Inspectorate For Environmental Protection</a>. 
-Weather data are powered by <a href="https://developer.worldweatheronline.com/" title="Free Weather API" target="_blank">World Weather Online</a>. All data were available in 1-hour interval.
-Whole analysis was performed for one measured station located in Krasiński Street, Cracow, Poland. I believe that general ideas from this analysis could be applied into other locations, but detailed results may varies.
+Weather data are powered by <a href="https://developer.worldweatheronline.com/" title="Free Weather API" target="_blank">World Weather Online</a>. All data were available in 1-hour intervals.
+Whole analysis was performed for one measured station located in Krasiński Street, Cracow, Poland. I believe that general ideas from this analysis could be applied into other locations, but detailed results may vary.
 Available weather data included:
 * Temperature (&deg;C)
 * Wind speed (kmph)
@@ -26,10 +35,48 @@ Available weather data included:
 * Pressure (milibars)
 * Precipitation (mm)
 * Feels like temperature (&deg;C)
-* Cloud cover amount (%)
+* Cloudiness (%)
 * Wind direction (degrees)
 
 ## Data exploration
+
+#### PM 10 distribution
+
+For a start let's plot histogram for PM10. As we know PM10 can obtain any value greater than zero and as we can see in the picture below, distribution is skeewed in comparison to normal distribution with the same mean and standard deviation.
+![PM10 histogram](plots/FullDist.png)
+
+As it is easier to work with normal distribution, we can logarithm the data and, as a result obtain almost perfect normal distribution. So, from now I will focus only on logarithm PM10 data.
+
+![Log PM10 histogram](plots/FullLogDist.png)
+
+Next let's see logarithm PM10 over months. As it's hard to think about logarithm PM10 exact values I've painted data according to Polish air pollution norms. We can clearly see that smog is a problem only in cold months - from October to April. 
+![PM10 over months](plots/FullMonthly.png)
+
+In my opinion we can obtain better results if we exclude summer months from the analysis. Of course in the summer we have higher temperatures, but other predictors won't vary as much in comparison to winter months. Also as there is no smog in summer, nobody will be interested in the model results for these months. Just for ensure we need to check the distribution of logarithm PM10 after summer exclusion. As we can see below it's moved into right now, but still pretty close to normal.
+
+![Log PM10 histogram summer exclusion](plots/WinterDist.png)
+
+###### Summary
+
+In conclusion, we made two assumptions for next chapters:
+* we use logarithm PM 10 instead of pure values
+* from May to September data were excluded
+
+#### Temperature
+
+#### Wind speed
+
+#### Humidity
+
+#### Pressure
+
+#### Precipitation
+
+#### Feels like temperature
+
+#### Cloudiness
+
+#### Wind direction
 
 ## PM10 modelling
 

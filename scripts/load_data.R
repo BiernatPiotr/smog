@@ -104,7 +104,8 @@ dfAllData %>%
     year = as.integer(format(date, '%Y')),
     month = as.integer(format(date, '%m')),
     day = as.integer(format(date, '%d')),
-    AirQuality = factor(fAirPollution(PM10), levels = c('Very good','Good','Moderate','Sufficient','Bad','Very bad'), ordered = TRUE)
+    AirQuality = factor(fAirPollution(PM10), levels = c('Very good','Good','Moderate','Sufficient','Bad','Very bad'), ordered = TRUE),
+    logPM10 = log(PM10)
   ) %>%
   ungroup() %>%
   na.omit() ->
