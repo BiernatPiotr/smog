@@ -11,13 +11,16 @@ source('scripts/load_data.R')
 
 # lets see PM10 distribution
 
-ggplot(dfAllData,aes(PM10, ..density..)) +
-  geom_histogram(bins = 100, color = 'white', fill = 'black', alpha = 0.6) +  
+ggplot(dfAllData,aes(PM10), geom = 'blank') +
+  geom_histogram(aes(y = ..density..),bins = 30, color = 'white', fill = 'black', alpha = 0.4) +
+  geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') +
+  stat_function(fun = dnorm, args = list(mean = mean(dfAllData$PM10), sd = sd(dfAllData$PM10)), aes(colour = 'Normal')) +
+  scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+  theme(legend.position = c(0.85, 0.85)) +
   xlim(0,400) +
   labs(
     x = expression(paste('PM10 ',mu,'g/m'^3)),
-    y = 'Density',
-    fill = 'Year'
+    y = 'Density'
   ) +
   theme_classic() +
   theme(
@@ -39,18 +42,48 @@ ggsave(
   dpi = 100
 )
 
-# for a start let's see PM10 over months
+# log distribution
+ggplot(dfAllData,aes(logPM10), geom = 'blank') +
+  geom_histogram(aes(y = ..density..),bins = 30, color = 'white', fill = 'black', alpha = 0.4) +
+  geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') +
+  stat_function(fun = dnorm, args = list(mean = mean(dfAllData$logPM10), sd = sd(dfAllData$logPM10)), aes(colour = 'Normal')) +
+  scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+  theme(legend.position = c(0.85, 0.85)) +
+  labs(
+    x = expression(paste('log PM10 ',mu,'g/m'^3)),
+    y = 'Density'
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(
+      angle = 45, 
+      vjust = 1, 
+      hjust=1
+    )
+  ) -> FullLogDist
 
+
+# saving plot
+ggsave(
+  filename = 'plots/FullLogDist.png',
+  plot = FullLogDist,
+  width = 8,
+  dpi = 100
+)
+
+# for a start let's see log PM10 over months
 ggplot(dfAllData) +
   geom_jitter(
     aes(
       x = day,
-      y = PM10, 
-      color = AirQuality, 
-      shape = as.factor(year)
-    )
+      y = logPM10, 
+      fill = AirQuality
+    ),
+    pch = 21
   )  +
-  scale_colour_brewer(
+  scale_fill_brewer(
     palette = 'RdYlGn',
     direction = -1
   ) +
@@ -59,9 +92,8 @@ ggplot(dfAllData) +
   ) +
   labs(
     x = 'Days' ,
-    y  = expression(paste('PM10 ',mu,'g/m'^3)),
-    shape = 'Year',
-    color = 'Air quality'
+    y  = expression(paste('log PM10 ',mu,'g/m'^3))
+    fill = 'Air quality'
   ) + 
   facet_wrap(
     facets = ~ month, 
@@ -100,13 +132,15 @@ dfWinterData %>%
 
 # lets see PM10 distribution on new data
 
-ggplot(dfWinterData,aes(PM10, ..density..)) +
-  geom_histogram(bins = 100, color = 'white', fill = 'black', alpha = 0.6) +  
-  xlim(0,400) +
+ggplot(dfWinterData,aes(logPM10), geom = 'blank') +
+  geom_histogram(aes(y = ..density..),bins = 30, color = 'white', fill = 'black', alpha = 0.4) +
+  geom_line(aes(y = ..density.., colour = 'Empirical'), stat = 'density') +
+  stat_function(fun = dnorm, args = list(mean = mean(dfWinterData$logPM10), sd = sd(dfWinterData$logPM10)), aes(colour = 'Normal')) +
+  scale_colour_manual(name = 'Density', values = c('red', 'blue')) + 
+  theme(legend.position = c(0.85, 0.85)) +
   labs(
-    x = expression(paste('PM10 ',mu,'g/m'^3)),
-    y = 'Density',
-    fill = 'Year'
+    x = expression(paste('log PM10 ',mu,'g/m'^3)),
+    y = 'Density'
   ) +
   theme_classic() +
   theme(
@@ -117,13 +151,94 @@ ggplot(dfWinterData,aes(PM10, ..density..)) +
       vjust = 1, 
       hjust=1
     )
-  ) -> WinterDist
+  )  -> WinterDist
 
+# let's see log PM10 over weekdays
+ggplot(
+  dfWinterData,
+  aes(
+    x = as.factor(weekday),
+    y = logPM10,
+    colour = as.factor(weekday),
+    fill = as.factor(weekday)
+  )
+) +
+  scale_fill_discrete(name = "", labels = c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')) +
+  scale_colour_discrete(name = "", labels = c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')) +
+  # data
+  geom_boxplot() +
+  theme_classic() +
+  theme(
+    axis.text.x=element_blank(),
+    legend.position="bottom",
+    legend.box = "horizontal"
+  ) +
+  labs(
+    x = 'Weekday',
+    y = expression(paste('log PM10 ',mu,'g/m'^3))
+  ) +
+  stat_summary(
+    geom = "crossbar",
+    width=0.65, 
+    fatten=0, 
+    color="white", 
+    fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) }
+  ) +
+  stat_summary(
+    fun.data = function(x){ return(c(y=median(x),label = round(median(x),1)))}, 
+    geom="text", 
+    vjust=-0.8,
+    color = 'white'
+  ) -> WeekdayDist
 
 # saving plot
 ggsave(
-  filename = 'plots/WinterDist.png',
-  plot = WinterDist,
+  filename = 'plots/WeekdayDist.png',
+  plot = WeekdayDist,
+  width = 8,
+  dpi = 100
+)
+
+# let's see log PM10 over hours
+ggplot(dfAllData) +
+  geom_jitter(
+    aes(
+      x = time,
+      y = logPM10, 
+      fill = AirQuality
+    ),
+    pch = 21
+  )  +
+  geom_smooth(
+    aes(
+      x = time,
+      y = logPM10
+    )
+  ) +
+  scale_fill_brewer(
+    palette = 'RdYlGn',
+    direction = -1
+  ) +
+  labs(
+    x = 'Days' ,
+    y  = expression(paste('log PM10 ',mu,'g/m'^3)),
+    fill = 'Air quality'
+  ) + 
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(
+      angle = 45, 
+      vjust = 1, 
+      hjust=1
+    )
+  ) -> HoursDist
+
+# saving plot
+ggsave(
+  filename = 'plots/HoursDist.png',
+  plot = HoursDist,
   width = 8,
   dpi = 100
 )
@@ -139,16 +254,16 @@ iUnits <- list(
   winddirDegree = 'Wind direction [degrees]',
   humidity = 'Humidity [%]',
   pressure = 'Pressure [millibars]',
-  cloudcover = 'Cloud cover amount [%]',
+  cloudcover = 'Cloudiness [%]',
   precipMM = 'Precipitation [mm]'
 )
 
-for (iWeatherVariable in names(dfWinterData)[c(3:10)]) {
+for (iWeatherVariable in names(iUnits)) {
   
   # glm formula 
   as.formula(
     paste0(
-      'PM10 ~',
+      'logPM10 ~',
       iWeatherVariable
     )
   ) -> 
@@ -172,7 +287,7 @@ for (iWeatherVariable in names(dfWinterData)[c(3:10)]) {
   # gam formula
   as.formula(
     paste0(
-      'PM10 ~ s(',
+      'logPM10 ~ s(',
       iWeatherVariable,
       ', k = ',
       mSmoothFit$df,
@@ -209,9 +324,8 @@ for (iWeatherVariable in names(dfWinterData)[c(3:10)]) {
   ggplot(dfWinterData) +
     # data
     geom_jitter( 
-      aes_string(iWeatherVariable,'PM10'), 
-      color = 'black', 
-      size = 0.5
+      aes_string(iWeatherVariable,'logPM10', fill = 'AirQuality'),
+      pch = 21
     )  +
    # linear model
     geom_line(
@@ -256,10 +370,14 @@ for (iWeatherVariable in names(dfWinterData)[c(3:10)]) {
       alpha = 0.3
     ) +
     scale_color_discrete(name = "") +
-    ylim(0,400) + 
-    labs(
+    scale_fill_brewer( 
+      palette = 'RdYlGn',
+      direction = -1,
+      name = "Air quality"
+    ) +
+     labs(
       x = iUnits[[iWeatherVariable]],
-      y = expression(paste('PM10 ',mu,'g/m'^3))
+      y = expression(paste('log PM10 ',mu,'g/m'^3))
     ) +
     theme_classic() +
     theme(
@@ -285,10 +403,11 @@ ggplot(dfWinterData) +
     aes(
       x = humidity,
       y = tempC,
-      color = AirQuality),
-    size = 0.95
+      fill = AirQuality
+    ),
+    pch = 21
   )  +
-  scale_colour_brewer(
+  scale_fill_brewer(
     palette = 'RdYlGn',
     direction = -1
   ) +
@@ -319,7 +438,7 @@ ggplot(
   dfWinterData,
   aes(
     x = IfPrecipitation,
-    y = PM10,
+    y = logPM10,
     colour = IfPrecipitation,
     fill = IfPrecipitation
   )
@@ -328,8 +447,7 @@ ggplot(
   scale_colour_discrete(name = "", labels = c('Precipitation','No precipitation')) +
   # data
   geom_boxplot() +
-  ylim(0,400) +
-  theme_classic() +
+   theme_classic() +
   theme(
     axis.text.x=element_blank(),
     legend.position="bottom",
@@ -337,7 +455,7 @@ ggplot(
     ) +
   labs(
     x = '',
-    y = expression(paste('PM10 ',mu,'g/m'^3))
+    y = expression(paste('log PM10 ',mu,'g/m'^3))
   ) +
   stat_summary(
     geom = "crossbar",
@@ -362,10 +480,11 @@ ggplot(dfWinterData) +
     aes(
       x = winddirDegree,
       y = windspeedKmph,
-      color = AirQuality),
-    size = 0.95
+      fill = AirQuality
+    ),
+    pch = 21
   )  +
-  scale_colour_brewer(
+  scale_fill_brewer(
     palette = 'RdYlGn',
     direction = -1
   ) +

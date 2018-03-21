@@ -11,7 +11,7 @@ read.delim(
   dfWeather
 
 # quick preview of data
-glimpse(dfWeather)
+# glimpse(dfWeather)
 
 # there are the same parameters in different units, so we chose only one of them
 dfWeather %>%
@@ -33,7 +33,7 @@ dfWeather %>%
 dfWeather$date <-  as.Date(dfWeather$date)
 
 # check
-glimpse(dfWeather)
+# glimpse(dfWeather)
 
 # load smog data, as we analyse only one station, we select data only for it
 read.csv2(
@@ -68,7 +68,7 @@ read.csv2(
   dfSmog
 
 # quick preview
-glimpse(dfSmog)
+# glimpse(dfSmog)
 
 # prepare date and hours format for join
 dfSmog %>%
@@ -79,7 +79,7 @@ dfSmog %>%
   dfSmog
 
 # check
-glimpse(dfSmog)
+# glimpse(dfSmog)
 
 # join data
 dfWeather %>%
@@ -87,7 +87,7 @@ dfWeather %>%
   dfAllData
 
 # quick preview
-glimpse(dfAllData)
+# glimpse(dfAllData)
 
 # for future use we add levels for PM10, here function with boundaries
 fAirPollution <- function(iPM10) {
@@ -104,6 +104,7 @@ dfAllData %>%
     year = as.integer(format(date, '%Y')),
     month = as.integer(format(date, '%m')),
     day = as.integer(format(date, '%d')),
+    weekday = as.integer(format(date, '%u')),
     AirQuality = factor(fAirPollution(PM10), levels = c('Very good','Good','Moderate','Sufficient','Bad','Very bad'), ordered = TRUE),
     logPM10 = log(PM10)
   ) %>%
@@ -112,7 +113,7 @@ dfAllData %>%
   dfAllData
 
 # check
-glimpse(dfAllData)
+# glimpse(dfAllData)
 
 # some cleaning
 rm(list = c('dfSmog','dfWeather'))
