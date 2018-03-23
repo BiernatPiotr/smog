@@ -91,8 +91,8 @@ ggplot(dfAllData) +
     breaks = c(1,5,10,15,20,25,30)
   ) +
   labs(
-    x = 'Days' ,
-    y  = expression(paste('log PM10 ',mu,'g/m'^3))
+    x = 'Day',
+    y  = expression(paste('log PM10 ',mu,'g/m'^3)),
     fill = 'Air quality'
   ) + 
   facet_wrap(
@@ -118,17 +118,6 @@ ggsave(
   width = 8,
   dpi = 100
   )
-
-# filter month with smog
-dfAllData %>% 
-  filter(month %in% c(1,2,3,4,10,11,12)) ->
-  dfWinterData
-
-glimpse(dfWinterData)
-
-dfWinterData %>%
-  mutate(IfPrecipitation = precipMM>0) ->
-  dfWinterData
 
 # lets see PM10 distribution on new data
 
@@ -220,7 +209,7 @@ ggplot(dfAllData) +
     direction = -1
   ) +
   labs(
-    x = 'Days' ,
+    x = 'Hour' ,
     y  = expression(paste('log PM10 ',mu,'g/m'^3)),
     fill = 'Air quality'
   ) + 
@@ -246,17 +235,6 @@ ggsave(
 #######################################
 ##  loop for plot of every variable
 #######################################
-
-iUnits <- list(
-  tempC = 'Temperature [°C]',
-  FeelsLikeC = 'Feels like temperature [°C]',
-  windspeedKmph = 'Wind speed [km/h]',
-  winddirDegree = 'Wind direction [degrees]',
-  humidity = 'Humidity [%]',
-  pressure = 'Pressure [millibars]',
-  cloudcover = 'Cloudiness [%]',
-  precipMM = 'Precipitation [mm]'
-)
 
 for (iWeatherVariable in names(iUnits)) {
   
@@ -395,6 +373,142 @@ for (iWeatherVariable in names(iUnits)) {
   
 }
 
+
+# temp plot over all months 
+
+# glm formula 
+as.formula(
+  paste0(
+    'logPM10 ~',
+    'tempC'
+  )
+) -> 
+  sFormulaGlm
+
+# linear model
+glm(
+  formula = sFormulaGlm,
+  data = dfAllData
+) ->
+  mGlmFit
+
+# smooth spline degrees of freedom
+smooth.spline(
+  x = dfAllData$PM10,
+  y = dfAllData[['tempC']],
+  cv = TRUE
+) -> 
+  mSmoothFit
+
+# gam formula
+as.formula(
+  paste0(
+    'logPM10 ~ s(',
+    'tempC',
+    ', k = ',
+    mSmoothFit$df,
+    ')'
+  )
+) -> 
+  sFormulaGam
+
+# smooth splines model
+gam(
+  formula = sFormulaGam,
+  data = dfAllData,
+  family = gaussian
+) ->
+  mGamFit
+
+# variable grid
+range(dfAllData[['tempC']]) -> cRange
+dfGrid <- data.frame(seq(cRange[1],cRange[2], by = (cRange[2] - cRange[1])/500))
+names(dfGrid) <- 'tempC'
+
+# preadict on grid
+predict(mGlmFit, newdata = dfGrid, se.fit = TRUE) -> mGlmPredict
+predict(mGamFit, newdata = dfGrid, se.fit = TRUE) -> mGamPredict
+
+# cutting at 0 for plot
+mGlmPredict$fit -> dfGrid$glm
+sapply(mGlmPredict$fit - 2 * mGlmPredict$se.fit, max, 0) -> dfGrid$glmCIL
+sapply(mGlmPredict$fit + 2 * mGlmPredict$se.fit, max, 0) -> dfGrid$glmCIU
+mGamPredict$fit -> dfGrid$gam
+sapply(mGamPredict$fit - 2 * mGamPredict$se.fit, max, 0) -> dfGrid$gamCIL
+sapply(mGamPredict$fit + 2 * mGamPredict$se.fit, max, 0) -> dfGrid$gamCIU
+
+ggplot(dfAllData) +
+  # data
+  geom_jitter( 
+    aes_string('tempC','logPM10', fill = 'AirQuality'),
+    pch = 21
+  )  +
+  # linear model
+  geom_line(
+    aes_string(
+      'tempC', 
+      'glm', 
+      colour = "'linear model'"
+    ), 
+    data = dfGrid, 
+    size = 1, 
+    linetype = 1
+  ) + 
+  # confidence interval 
+  geom_ribbon(
+    aes_string(
+      x = 'tempC',
+      ymin = 'glmCIL',
+      ymax = 'glmCIU'
+    ),
+    data = dfGrid, 
+    alpha = 0.3
+  ) +
+  # gam model
+  geom_line(
+    aes_string(
+      'tempC', 
+      'gam', 
+      colour = "'smooth spline model'"
+    ),
+    data = dfGrid, 
+    size = 1, 
+    linetype = 1
+  ) + 
+  # confidence interval 
+  geom_ribbon(
+    aes_string(
+      x = 'tempC',
+      ymin = 'gamCIL',
+      ymax = 'gamCIU'
+    ),
+    data = dfGrid, 
+    alpha = 0.3
+  ) +
+  scale_color_discrete(name = "") +
+  scale_fill_brewer( 
+    palette = 'RdYlGn',
+    direction = -1,
+    name = "Air quality"
+  ) +
+  labs(
+    x = iUnits[['tempC']],
+    y = expression(paste('log PM10 ',mu,'g/m'^3))
+  ) +
+  theme_classic() +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)
+  ) -> ggPlot
+
+ggsave(
+  filename = paste0('plots/tempAll.png'),
+  plot = ggPlot,
+  width = 8,
+  dpi = 100
+)
+
 # humidity over temperature plot
 
 ggplot(dfWinterData) +
@@ -467,6 +581,148 @@ ggplot(
 
 ggsave(
   filename = paste0('plots/IfPrecip.png'),
+  plot = ggPlot,
+  width = 8,
+  dpi = 100
+)
+
+# precipitation greater than zero plot
+
+dfWinterData %>%
+  filter(precipMM>0) ->
+  dfWinterData2
+
+iWeatherVariable <- 'precipMM'
+
+# glm formula 
+as.formula(
+  paste0(
+    'logPM10 ~',
+    iWeatherVariable
+  )
+) -> 
+  sFormulaGlm
+
+# linear model
+glm(
+  formula = sFormulaGlm,
+  data = dfWinterData2
+) ->
+  mGlmFit
+
+# smooth spline degrees of freedom
+smooth.spline(
+  x = dfWinterData2$PM10,
+  y = dfWinterData2[[iWeatherVariable]],
+  cv = TRUE
+) -> 
+  mSmoothFit
+
+# gam formula
+as.formula(
+  paste0(
+    'logPM10 ~ s(',
+    iWeatherVariable,
+    ', k = ',
+    mSmoothFit$df,
+    ')'
+  )
+) -> 
+  sFormulaGam
+
+# smooth splines model
+gam(
+  formula = sFormulaGam,
+  data = dfWinterData2,
+  family = gaussian
+) ->
+  mGamFit
+
+# variable grid
+range(dfWinterData2[[iWeatherVariable]]) -> cRange
+dfGrid <- data.frame(seq(cRange[1],cRange[2], by = (cRange[2] - cRange[1])/500))
+names(dfGrid) <- iWeatherVariable
+
+# preadict on grid
+predict(mGlmFit, newdata = dfGrid, se.fit = TRUE) -> mGlmPredict
+predict(mGamFit, newdata = dfGrid, se.fit = TRUE) -> mGamPredict
+
+# cutting at 0 for plot
+mGlmPredict$fit -> dfGrid$glm
+sapply(mGlmPredict$fit - 2 * mGlmPredict$se.fit, max, 0) -> dfGrid$glmCIL
+sapply(mGlmPredict$fit + 2 * mGlmPredict$se.fit, max, 0) -> dfGrid$glmCIU
+mGamPredict$fit -> dfGrid$gam
+sapply(mGamPredict$fit - 2 * mGamPredict$se.fit, max, 0) -> dfGrid$gamCIL
+sapply(mGamPredict$fit + 2 * mGamPredict$se.fit, max, 0) -> dfGrid$gamCIU
+
+ggplot(dfWinterData2) +
+  # data
+  geom_jitter( 
+    aes_string(iWeatherVariable,'logPM10', fill = 'AirQuality'),
+    pch = 21
+  )  +
+  # linear model
+  geom_line(
+    aes_string(
+      iWeatherVariable, 
+      'glm', 
+      colour = "'linear model'"
+    ), 
+    data = dfGrid, 
+    size = 1, 
+    linetype = 1
+  ) + 
+  # confidence interval 
+  geom_ribbon(
+    aes_string(
+      x = iWeatherVariable,
+      ymin = 'glmCIL',
+      ymax = 'glmCIU'
+    ),
+    data = dfGrid, 
+    alpha = 0.3
+  ) +
+  # gam model
+  geom_line(
+    aes_string(
+      iWeatherVariable, 
+      'gam', 
+      colour = "'smooth spline model'"
+    ),
+    data = dfGrid, 
+    size = 1, 
+    linetype = 1
+  ) + 
+  # confidence interval 
+  geom_ribbon(
+    aes_string(
+      x = iWeatherVariable,
+      ymin = 'gamCIL',
+      ymax = 'gamCIU'
+    ),
+    data = dfGrid, 
+    alpha = 0.3
+  ) +
+  scale_color_discrete(name = "") +
+  scale_fill_brewer( 
+    palette = 'RdYlGn',
+    direction = -1,
+    name = "Air quality"
+  ) +
+  labs(
+    x = iUnits[[iWeatherVariable]],
+    y = expression(paste('log PM10 ',mu,'g/m'^3))
+  ) +
+  theme_classic() +
+  scale_x_continuous(trans = 'log10')  +
+  theme(
+    legend.position="bottom",
+    legend.box = "horizontal",
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)
+  ) -> ggPlot
+
+ggsave(
+  filename = paste0('plots/',iWeatherVariable,'2.png'),
   plot = ggPlot,
   width = 8,
   dpi = 100

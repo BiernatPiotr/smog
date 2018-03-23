@@ -115,5 +115,29 @@ dfAllData %>%
 # check
 # glimpse(dfAllData)
 
+# filter months with smog
+dfAllData %>% 
+  filter(month %in% c(1,2,3,4,10,11,12)) ->
+  dfWinterData
+
+# glimpse(dfWinterData)
+
+# boolean variable for precipitation
+dfWinterData %>%
+  mutate(IfPrecipitation = precipMM>0) ->
+  dfWinterData
+
 # some cleaning
 rm(list = c('dfSmog','dfWeather'))
+
+# table with user friendly names and units
+iUnits <- list(
+  tempC = 'Temperature [°C]',
+  FeelsLikeC = 'Feels like temperature [°C]',
+  windspeedKmph = 'Wind speed [km/h]',
+  winddirDegree = 'Wind direction [degrees]',
+  humidity = 'Humidity [%]',
+  pressure = 'Pressure [millibars]',
+  cloudcover = 'Cloudiness [%]',
+  precipMM = 'Precipitation [mm]'
+)

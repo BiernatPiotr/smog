@@ -3,6 +3,7 @@
 ## Table of context
 
 * [Introduction](#introduction)  
+* [The progress of the analysis](#the-progress-of-the-analysis)  
 * [Data sources](#data-sources)  
 * [Data exploration](#data-exploration)  
   * [PM 10 distribution](#pm-10-distribution)  
@@ -16,12 +17,19 @@
   * [Wind direction](#wind-direction)  
 * [PM10 modelling](#pm10-modelling)  
 * [Air pollution modelling](#air-pollution-modelling)  
-* [What's next?](#whats-next)  
 
 ## Introduction
 
 Smog is a very big problem in Poland. Especially in a winter there are warnings in a mass media almost every day. The air here is one of the worst in Europe. There are mainly two things responsible for this state: transport and coal-heating. A lot of people argue about which of these sources has bigger impact on air pollution, but this is not the subject of this analysis. One the other hand there are some factors that decrease air pollution. For example it is well-known fact that strong wind blows away smog from the city. In this analysis I will try to find some predictors for smog levels. As I have full weather data and no data about traffic or coal-heating, I will make some assumptions. Temperature is probably highly correlated with heating usage, so I will assume that, it's a good substitution. There is a bigger problem with traffic, but I will take a closer look at smog level in rush hours and days of week.
 Finally I want to answer the title question: as we can predict weather, can we also predict smog? Only on the basis of weather forecast. Probably accuracy of obtained model won't be the best (as if it was so simple everyone would do it), but maybe somebody could find it useful.
+
+## The progress of the analysis
+
+- [x] Download data  
+- [x] Data exploration  
+- [ ] PM10 gam modelling  
+- [ ] Air pollution level gam modelling  
+- [ ] More advanced modelling (random forest?)  
 
 ## Data sources
 
@@ -58,15 +66,15 @@ In my opinion we can obtain better results if we exclude summer months from the 
 
 ![Log PM10 histogram summer exclusion](plots/WinterDist.png)
 
-Finally let's take a look at the differences in PM10 logarithm data during the day and on weekdays. In the picture below, boxplots are shown for each weekday. Also median value is marked as white line and values are displayed. We can see that Sunday 's smog is clearly lower than other days. I'm little surprised that Saturday's smog is not in lower boundary, but is in one of the highest levels.
+Finally let's take a look at the differences in PM10 logarithm data during the day and on weekdays. In the picture below, boxplots are shown for each weekday. Also median value is presented as white line and value. We can see that Sunday 's smog is clearly lower than smog on the other days. I'm little surprised that Saturday's smog is on so high level.
 
 ![Log PM10 boxplots over weekdays](plots/WeekdayDist.png)
 
-Last one is distribution of PM10 logarithm over hours. The blue line is a smooth spline and we can read from it few things. First smog is increasing durning night - it's connected to lower temperatures durning nigth and coal-heating. Around 4-5 AM we can see little decrease in smog, what is probably connected to furnaces expiration, as the oldest (and worst due to air pollution) ones have no automatic refill. Next is morning increase, probably connected to peak traffic, then again decrease and last increase in the evening connected with evening peak traffic. There is no visible gap between evening peak and night heating, so evening traffic impact on smog remains in the sphere of guesses.
+Finally, the distribution of PM10 logarithm over day hours. The blue line is a smooth spline and we can read from it few things. In general, starting from midnight, smog is on the highest level - it's probably connected with lower temperatures during night and coal-heating. Around 4-5 AM we can see little decrease in smog, what is probably connected with furnaces expiration, as the oldest (and worst from air pollution point of view) ones have no automatic refill. Subsequently there is morning increase, probably connected with peak traffic, and then again decrease in smog as temperatures go up and traffic decrease. In the evening and night we can see constantly increase connected with evening peak traffic and coal-heating - in this way the cycle begins again. There is no visible gap between evening traffic peak and night heating, so evening traffic impact on smog remains in the sphere of guesses.
 
 ![Log PM10 over hours](plots/HoursDist.png)
 
-###### Summary
+##### Summary
 
 In conclusion, we made two assumptions for next chapters:
 * we use PM10 logarithm instead of pure values
@@ -74,29 +82,74 @@ In conclusion, we made two assumptions for next chapters:
 
 #### Temperature
 
+There is no surprise here. Negative correlation between temperature and smog is very clear. There is also no big differences between linear and smooth spline model - increase around 10 degrees is probably conencted with the lack of data, instead of real correlation. We can confirm it by plotting the same graph on full data.
+
+![PM10 on temperature](plots/TempC.png)
+
+Our hypothesis regarding an anomaly of 10 degrees was correct, but there is something interesting for high temperatures! Again we can think that it's conneted with lack of data, but result is enormous. In my opinion spline model can be correct - during sweltering weather, everything is so dry that the dust is floating in the air. 
+
+![PM10 on temperature - whole year](plots/tempAll.png)
+
 #### Wind speed
+
+Here we got exactly the same conclusion as for temperature - correlation is negative and obvious, also there is no difference in linear and smooth model if only amount of data is enough.
+
+![PM10 on wind speed](plots/windspeedKmph.png)
 
 #### Humidity
 
+There is almost no correlation beetwen humidity and smog for values greater than 40%. But for lower values smog seems to growth fast. So, is there any other factor that can be corelated only with low humidy? I think about freezing weather - it's typically occurs together with sun and dry air.
+
+![PM10 on humidity](plots/humidity.png)
+
+
+On the picture below we can see the correlation between temperature and humidity. Again for values below 40% there is change in the trend, but I'm not sure if we have enough data for such a conclusion. In general, I would said that humidity has no impact on smog, but it's correlated with temperature in some areas, which has clearly impact on air pollution.
+
+![Temperature on humidity](plots/HumTemp.png)
+
 #### Pressure
+
+Like for the wind speed and the temperature, correlation between the pressure and the smog is clear, but in this case it's positive. There is no big difference between smooth spline and linear model for middle data again, but for extreme values spline tends to overfitting.
+
+![PM10 on pressure](plots/pressure.png)
 
 #### Precipitation
 
+We can see that blue line is almost horizontal - there is increase only for very small values. Probably linear model is also biased by that low values. I would even said that that impact is coming from zero value i.e. no precipitation, and for the rest values the amount of precipitation has no impact on smog. We can examine it by creating new binary variable 'IfPrecipitation' that has two values: one for precipitation greater than zero and other otherwise. Finally I would plot models again only for values greater than zero.
+
+![PM10 on precipitation](plots/precipMM.png)
+
+Indeed, on the picture below we can see that smog is lower if there are any precipitation. So we could include that new variable in future modelling.
+
+![PM10 on precipitation](plots/IfPrecip.png)
+
+X axis is additionally modified by taking logarithmic scale. Lines form both models are mostly horizontal, only for extreme precipitations we can see some variability, but there is no enough data for any conclusion.
+
+![PM10 on precipitation](plots/precipMM2.png)
+
 #### Feels like temperature
+
+We know that picture from temperature plot. The only difference is that for extreme low temperatures smooth model goes below linear. As we know that feels like temperature is a product of temperature, wind speed and humidity, from previous plots we can assume that the aforementioned difference is due to increase in wind speed. So there is nothing new here and the impact from this variable is described by predictors mentioned before.
+
+![PM10 on feels like temperature ](plots/FeelsLikeC.png)
 
 #### Cloudiness
 
+Again both models are almost identical, but it's not difficult to notice that there is some correlation. For me, it's a completely unintuitive observation that the correlation is negative. 
+
+![PM10 on cloudiness](plots/cloudcover.png)
+
 #### Wind direction
+
+It's not correct to use linear model in cyclical data, so we would focus only on the smooth model. Also we should remember that wind direction is very specific predictor for chosen location that can't be generalized in any way. What we can said for Cracow? The smog is lower when wind blows from north-west direction. But let's check if that results is coming truely from direction, not from wind speed.
+
+![PM10 on wind direction](plots/winddirDegree.png)
+
+According to my supposition north-west winds are the strongest, and the blue line below is almost inverse of blue line in the previous picture. So in conclusion the wind direction has almost no impact on smog.
+
+![PM10 on wind direction](plots/WindSpeedDegree.png)
 
 ## PM10 modelling
 
 ## Air pollution modelling
-
-## What's next?
-
-- [x] Download data  
-- [ ] Data exploration  
-- [ ] PM10 gam modelling  
-- [ ] Air pollution level gam modelling  
-- [ ] More advanced modelling (random forest?)  
 
