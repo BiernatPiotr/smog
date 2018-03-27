@@ -82,7 +82,7 @@ In conclusion, we made two assumptions for next chapters:
 
 #### Temperature
 
-There is no surprise here. Negative correlation between temperature and smog is very clear. There is also no big differences between linear and smooth spline model - increase around 10 degrees is probably conencted with the lack of data, instead of real correlation. We can confirm it by plotting the same graph on full data.
+There is no surprise here. Negative correlation between temperature and smog is very clear. There is also no big difference between linear and smooth spline model - increase around 10 degrees is probably conencted with the lack of data, instead of real correlation. We can confirm it by plotting the same graph on full data.
 
 ![PM10 on temperature](plots/TempC.png)
 
@@ -92,18 +92,18 @@ Our hypothesis regarding an anomaly of 10 degrees was correct, but there is some
 
 #### Wind speed
 
-Here we got exactly the same conclusion as for temperature - correlation is negative and obvious, also there is no difference in linear and smooth model if only amount of data is enough.
+Here we've got exactly the same conclusion as for temperature - correlation is negative and obvious, also there is no difference in linear and smooth model if only amount of data is enough.
 
 ![PM10 on wind speed](plots/windspeedKmph.png)
 
 #### Humidity
 
-There is almost no correlation beetwen humidity and smog for values greater than 40%. But for lower values smog seems to growth fast. So, is there any other factor that can be corelated only with low humidy? I think about freezing weather - it's typically occurs together with sun and dry air.
+There is almost no correlation beetwen humidity and smog for values greater than 40%. But for lower values smog seems to growth fast. So, is there any other factor that can be corelated only with low humidity? I think about freezing weather - it typically occurs together with sun and dry air.
 
 ![PM10 on humidity](plots/humidity.png)
 
 
-On the picture below we can see the correlation between temperature and humidity. Again for values below 40% there is change in the trend, but I'm not sure if we have enough data for such a conclusion. In general, I would said that humidity has no impact on smog, but it's correlated with temperature in some areas, which has clearly impact on air pollution.
+On the picture below we can see the correlation between temperature and humidity. Again for values below 40% there is a change in the trend, but I'm not sure if we have enough data for such a conclusion. In general, I would said that humidity has no impact on smog, but it's correlated with temperature in some areas, which has clearly impact on air pollution.
 
 ![Temperature on humidity](plots/HumTemp.png)
 
@@ -115,7 +115,7 @@ Like for the wind speed and the temperature, correlation between the pressure an
 
 #### Precipitation
 
-We can see that blue line is almost horizontal - there is increase only for very small values. Probably linear model is also biased by that low values. I would even said that that impact is coming from zero value i.e. no precipitation, and for the rest values the amount of precipitation has no impact on smog. We can examine it by creating new binary variable 'IfPrecipitation' that has two values: one for precipitation greater than zero and other otherwise. Finally I would plot models again only for values greater than zero.
+We can see that blue line is almost horizontal - there is increase only for very small values. Probably linear model is also biased by that low values. I would even say that that impact is coming from zero value i.e. no precipitation, and for the rest values the amount of precipitation has no impact on smog. We can examine it by creating new binary variable 'IfPrecipitation' that has two values: one for precipitation greater than zero and other otherwise. Finally I would plot models again only for values greater than zero.
 
 ![PM10 on precipitation](plots/precipMM.png)
 
